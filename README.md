@@ -1,14 +1,3 @@
----
-title: ElderCare 银发陪伴智能体
-emoji: 🌷
-colorFrom: indigo
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: true
-short_description: 动态路由 RAG + 三阶段检索 + 引用溯源，面向独居老人的 AI 陪伴助手
----
-
 # ElderCare 银发陪伴智能体
 
 面向独居老人的 AI 陪伴助手。基于 **FastAPI + 动态路由 RAG** 构建，将闲聊 / 健康咨询 / 心理倾诉 / 医疗急症 / 电信诈骗五类意图自动分诊；**三阶段检索**（dense + sparse → RRF → CrossEncoder rerank）保证 RAG 质量，**答案附带可点击引用源**使回答完全可解释；高风险场景实时邮件通知家属。
@@ -148,3 +137,7 @@ python scripts/eval_rag.py       # 三条流水线 RAGAS 风格对比
 - [ChatMed_Consult_Dataset](https://huggingface.co/datasets/michaelwzhu/ChatMed_Consult_Dataset)（michaelwzhu）
 - [PsyQA](https://huggingface.co/datasets/liuzj288/PsyQA)（liuzj288 社区镜像 / 原 thu-coai/PsyQA）
 - [BGE 系列模型](https://huggingface.co/BAAI)（BAAI）
+
+## License
+
+[MIT](LICENSE)
