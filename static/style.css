@@ -1,0 +1,359 @@
+/* ============ 全局 ============ */
+:root {
+  --bg: #FFF8F0;
+  --surface: #FFFFFF;
+  --primary: #4A9B8E;
+  --primary-dark: #3A7D72;
+  --text: #2D3748;
+  --text-soft: #718096;
+  --border: #E2E8F0;
+  --user-bubble: #DDF1ED;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
+
+  /* 五类意图配色 */
+  --c-chat: #94A3B8;
+  --c-health: #3B82F6;
+  --c-psych-low: #8B5CF6;
+  --c-psych-mid: #A855F7;
+  --c-psych-high: #DC2626;
+  --c-emergency: #EF4444;
+  --c-fraud: #F97316;
+
+  /* 用户可调字号（小/中/大切换） */
+  --reading-size: 17px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: var(--reading-size);
+  line-height: 1.6;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+code { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-size: 0.85em; }
+
+/* ============ 顶部栏 ============ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-emoji { font-size: 28px; }
+.brand-name { font-size: 19px; font-weight: 600; color: var(--primary-dark); }
+
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.toggle { display: flex; align-items: center; gap: 6px; color: var(--text-soft); font-size: 15px; user-select: none; cursor: pointer; }
+.sep { width: 1px; height: 18px; background: var(--border); }
+
+.btn-ghost {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-soft);
+  text-decoration: none;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { background: var(--bg); color: var(--primary); border-color: var(--primary); }
+
+/* ============ 聊天区 ============ */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.welcome {
+  text-align: center;
+  padding: 40px 20px;
+}
+.welcome h1 { font-size: calc(var(--reading-size) * 1.65); color: var(--primary-dark); margin-bottom: 12px; }
+.welcome p { font-size: var(--reading-size); color: var(--text-soft); margin-bottom: 28px; }
+.examples { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.example-chip {
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text);
+  font-size: calc(var(--reading-size) - 2px);
+  transition: all 0.15s;
+}
+.example-chip:hover { border-color: var(--primary); color: var(--primary); box-shadow: var(--shadow-sm); }
+
+/* 单条消息 */
+.msg { display: flex; gap: 12px; margin-bottom: 24px; }
+.msg.user { flex-direction: row-reverse; }
+.avatar {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: var(--shadow-sm);
+}
+.bubble {
+  max-width: 75%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.msg.user .bubble { background: var(--user-bubble); }
+
+/* 意图徽章 */
+.intent-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center; }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+.badge.CHAT      { background: var(--c-chat); }
+.badge.HEALTH    { background: var(--c-health); }
+.badge.PSYCH     { background: var(--c-psych-low); }
+.badge.PSYCH.mid { background: var(--c-psych-mid); }
+.badge.PSYCH.high { background: var(--c-psych-high); }
+.badge.EMERGENCY { background: var(--c-emergency); }
+.badge.FRAUD     { background: var(--c-fraud); }
+
+.log-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.log-tag.INFO  { background: #E5E7EB; color: #4B5563; }
+.log-tag.WARN  { background: #FEF3C7; color: #92400E; }
+.log-tag.ALERT { background: #FEE2E2; color: #B91C1C; }
+
+.alert-banner {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-left: 3px solid var(--c-emergency);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 检索结果折叠 */
+.retrieved {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+}
+.retrieved summary {
+  cursor: pointer;
+  color: var(--text-soft);
+  font-size: 13px;
+  user-select: none;
+  list-style: none;
+}
+.retrieved summary::before { content: "▸ "; }
+.retrieved[open] summary::before { content: "▾ "; }
+.retrieved-item {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-soft);
+  max-height: 240px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.55;
+}
+.retrieved-item.citation-flash { max-height: none; }  /* 被引用跳转时撑开看全 */
+.retrieved-item .dist { font-size: 12px; color: #94A3B8; margin-left: 6px; }
+
+/* 流式光标 */
+.cursor { display: inline-block; width: 2px; height: 1em; background: var(--primary); animation: blink 1s infinite; vertical-align: middle; margin-left: 1px; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* 引用徽章 */
+.citation {
+  display: inline-block;
+  cursor: pointer;
+  color: white;
+  background: var(--primary);
+  font-size: 0.72em;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin: 0 2px;
+  vertical-align: 2px;
+  line-height: 1.4;
+  transition: transform 0.15s, background 0.15s;
+  user-select: none;
+}
+.citation:hover {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+}
+
+/* 引用跳转后片段闪烁高亮 */
+.retrieved-item.citation-flash {
+  animation: flashHighlight 1.5s ease-out;
+}
+@keyframes flashHighlight {
+  0%   { background: #FFF3CD; box-shadow: 0 0 0 3px #FFD966; }
+  100% { background: #F8FAFC; box-shadow: none; }
+}
+
+/* ============ 输入区 ============ */
+.composer {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 16px 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.mic-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.mic-btn:hover { background: var(--user-bubble); }
+.mic-btn.recording { background: var(--c-emergency); border-color: var(--c-emergency); animation: pulse 1s infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); } }
+
+textarea#input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: var(--reading-size);
+  font-family: inherit;
+  resize: none;
+  max-height: 120px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+textarea#input:focus { border-color: var(--primary); }
+
+.send-btn {
+  padding: 12px 24px;
+  background: var(--primary);
+  color: white;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--primary-dark); }
+.send-btn:disabled { background: var(--text-soft); cursor: not-allowed; opacity: 0.6; }
+
+/* ============ 状态栏 ============ */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-soft);
+  flex-shrink: 0;
+}
+.status-bar code { background: var(--bg); padding: 2px 6px; border-radius: 4px; }
+
+/* ============ 字号切换 ============ */
+.font-toggle {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.font-toggle button {
+  padding: 6px 10px;
+  font-size: 14px;
+  color: var(--text-soft);
+  background: transparent;
+  transition: all 0.15s;
+  min-width: 40px;
+}
+.font-toggle button:hover { background: var(--surface); color: var(--primary); }
+.font-toggle button.active {
+  background: var(--primary);
+  color: white;
+}
+.font-toggle button:nth-child(1) { font-size: 12px; }
+.font-toggle button:nth-child(2) { font-size: 14px; }
+.font-toggle button:nth-child(3) { font-size: 16px; font-weight: 600; }
+
+/* ============ 响应式 / 手机适配 ============ */
+@media (max-width: 720px) {
+  .topbar {
+    padding: 10px 14px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .brand { justify-content: center; }
+  .brand-name { font-size: 17px; }
+  .topbar-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sep { display: none; }
+
+  .chat-area { padding: 16px; }
+  .welcome { padding: 24px 8px; }
+  .welcome h1 { font-size: calc(var(--reading-size) * 1.4); }
+  .examples { flex-direction: column; align-items: stretch; }
+  .example-chip { width: 100%; text-align: left; }
+
+  .msg { gap: 8px; margin-bottom: 16px; }
+  .avatar { width: 36px; height: 36px; font-size: 20px; }
+  .bubble { max-width: 82%; padding: 12px 14px; }
+
+  .composer { padding: 10px 12px; gap: 8px; }
+  .mic-btn { width: 44px; height: 44px; font-size: 20px; }
+  textarea#input { padding: 10px 12px; }
+  .send-btn { padding: 10px 16px; font-size: 15px; }
+
+  .status-bar { padding: 4px 14px; font-size: 12px; }
+  .status-bar span:first-child { display: none; } /* 隐藏 session 标签节省空间 */
+}
+
+@media (max-width: 420px) {
+  .toggle span { display: none; }   /* 自动朗读文字隐去，只剩 checkbox */
+  .btn-ghost { padding: 5px 10px; font-size: 13px; }
+  .font-toggle button { min-width: 32px; padding: 5px 8px; }
+}

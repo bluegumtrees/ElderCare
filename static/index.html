@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ElderCare 银发陪伴智能体</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-emoji">🌷</span>
+      <span class="brand-name">ElderCare 银发陪伴</span>
+    </div>
+    <div class="topbar-actions">
+      <div class="font-toggle" role="group" aria-label="字号">
+        <button data-size="15" title="小字号">小</button>
+        <button data-size="17" class="active" title="标准">中</button>
+        <button data-size="21" title="大字号">大</button>
+      </div>
+      <span class="sep"></span>
+      <label class="toggle">
+        <input type="checkbox" id="autoSpeak" />
+        <span>自动朗读</span>
+      </label>
+      <span class="sep"></span>
+      <button class="btn-ghost" id="resetBtn" title="开始新会话">新会话</button>
+      <a class="btn-ghost" href="/admin/stats" target="_blank">统计</a>
+      <a class="btn-ghost" href="/admin/export_excel" target="_blank">导出</a>
+    </div>
+  </header>
+
+  <main class="chat-area" id="chatArea">
+    <div class="welcome">
+      <h1>您好呀 👋</h1>
+      <p>我是您的陪伴助手，您可以跟我聊聊天、问健康问题，或者说说心里话。</p>
+      <div class="examples">
+        <button class="example-chip" data-msg="今天天气真好">💬 今天天气真好</button>
+        <button class="example-chip" data-msg="我血压有点高怎么办">🏥 我血压有点高怎么办</button>
+        <button class="example-chip" data-msg="老伴走了我一个人好孤单">💛 老伴走了我一个人好孤单</button>
+        <button class="example-chip" data-msg="我胸口好痛喘不上气">🚨 我胸口好痛喘不上气</button>
+        <button class="example-chip" data-msg="有人打电话说我中奖了让我转5000块手续费">⚠️ 有人说我中奖了让我转钱</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="composer">
+    <button class="mic-btn" id="micBtn" title="按住说话">
+      <span id="micIcon">🎤</span>
+    </button>
+    <textarea
+      id="input"
+      placeholder="跟我说几句话吧…（回车发送，Shift+回车换行）"
+      rows="1"
+    ></textarea>
+    <button class="send-btn" id="sendBtn">发送</button>
+  </footer>
+
+  <div class="status-bar">
+    <span>会话: <code id="sessionLabel">-</code></span>
+    <span id="statusText">就绪</span>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

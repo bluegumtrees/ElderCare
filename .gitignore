@@ -1,0 +1,29 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.idea/
+.vscode/
+# 向量数据库由 ingest 脚本生成，不提交（HF 构建时现场 ingest）
+chroma_data/
+
+# ---- 私有资料（参考资料、面试笔记等，不进任何远程仓库）----
+private/
+reports/
+
+# ---- IDE / 本地工具配置 ----
+.claude/
+
+data/app.db
+data/*.sqlite
+data/raw/
+data/*.jsonl
+data/*.json
+!data/.gitkeep
+reports/*.json
+reports/*.md
+!reports/.gitkeep
+.DS_Store
+*.egg-info/

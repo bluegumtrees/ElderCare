@@ -1,0 +1,42 @@
+# Docker build context exclusion list
+# 千万别把 .env / secrets / 本地缓存包进镜像
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.venv/
+venv/
+
+# OS / IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# 本地数据 / 缓存（chroma_data 由 build 时 ingest 生成，不从本地拷）
+chroma_data/
+data/raw/
+data/*.db
+data/*.sqlite
+data/*.jsonl
+data/*.json
+reports/
+
+# 私有资料与文档（不进运行时镜像）
+private/
+README.md
+
+# Claude / agent 配置
+.claude/
