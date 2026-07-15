@@ -1,15 +1,17 @@
-import chromadb
-from chromadb.config import Settings as ChromaSettings
-
+"""ChromaDB 包装。chromadb 懒导入：模块导入即拉起 onnxruntime 等重依赖，
+放到首次真正用到向量库时再加载，保证服务启动秒开。"""
 from .config import get_settings
 from .embeddings import embed
 
-_client: chromadb.api.ClientAPI | None = None
+_client = None
 
 
-def get_chroma() -> chromadb.api.ClientAPI:
+def get_chroma():
     global _client
     if _client is None:
+        import chromadb
+        from chromadb.config import Settings as ChromaSettings
+
         s = get_settings()
         _client = chromadb.PersistentClient(
             path=s.chroma_dir,

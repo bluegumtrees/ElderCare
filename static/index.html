@@ -7,58 +7,208 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-emoji">🌷</span>
-      <span class="brand-name">ElderCare 银发陪伴</span>
-    </div>
-    <div class="topbar-actions">
-      <div class="font-toggle" role="group" aria-label="字号">
-        <button data-size="15" title="小字号">小</button>
-        <button data-size="17" class="active" title="标准">中</button>
-        <button data-size="21" title="大字号">大</button>
+  <!-- ============ SVG 图标库（统一描边风格，替代 emoji） ============ -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-blossom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path fill="currentColor" fill-opacity="0.22" d="M6.8 3.6 L9.4 5.9 L12 3.4 L14.6 5.9 L17.2 3.6 C17.2 8.2 15.5 12.4 12 12.4 C8.5 12.4 6.8 8.2 6.8 3.6 Z"/>
+      <path d="M12 12.4 V21"/>
+      <path d="M12 19.6 C12 16.7 9.8 14.6 6.8 14.6 C7.2 17.5 9.2 19.6 12 19.6 Z"/>
+      <path d="M12 19.6 C12 16.7 14.2 14.6 17.2 14.6 C16.8 17.5 14.8 19.6 12 19.6 Z"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </symbol>
+    <symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7L19 15z"/>
+    </symbol>
+    <symbol id="i-columns" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/>
+    </symbol>
+    <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </symbol>
+  </svg>
+
+  <div class="app">
+    <!-- ============ 顶栏 ============ -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-blossom"/></svg></span>
+        <div class="brand-text">
+          <span class="brand-name">ElderCare 银发陪伴</span>
+          <span class="brand-sub">您的贴心陪伴助手</span>
+        </div>
       </div>
-      <span class="sep"></span>
-      <label class="toggle">
-        <input type="checkbox" id="autoSpeak" />
-        <span>自动朗读</span>
-      </label>
-      <span class="sep"></span>
-      <button class="btn-ghost" id="resetBtn" title="开始新会话">新会话</button>
-      <a class="btn-ghost" href="/admin/stats" target="_blank">统计</a>
-      <a class="btn-ghost" href="/admin/export_excel" target="_blank">导出</a>
-    </div>
-  </header>
-
-  <main class="chat-area" id="chatArea">
-    <div class="welcome">
-      <h1>您好呀 👋</h1>
-      <p>我是您的陪伴助手，您可以跟我聊聊天、问健康问题，或者说说心里话。</p>
-      <div class="examples">
-        <button class="example-chip" data-msg="今天天气真好">💬 今天天气真好</button>
-        <button class="example-chip" data-msg="我血压有点高怎么办">🏥 我血压有点高怎么办</button>
-        <button class="example-chip" data-msg="老伴走了我一个人好孤单">💛 老伴走了我一个人好孤单</button>
-        <button class="example-chip" data-msg="我胸口好痛喘不上气">🚨 我胸口好痛喘不上气</button>
-        <button class="example-chip" data-msg="有人打电话说我中奖了让我转5000块手续费">⚠️ 有人说我中奖了让我转钱</button>
+      <div class="topbar-actions">
+        <div class="font-toggle" role="group" aria-label="字号">
+          <button data-size="17" title="标准字号"><span style="font-size:13px">A</span>标准</button>
+          <button data-size="19" class="active" title="大字号"><span style="font-size:15px">A</span>大字</button>
+          <button data-size="22" title="特大字号"><span style="font-size:18px">A</span>特大</button>
+        </div>
+        <button class="pill-toggle" id="autoSpeakBtn" title="自动朗读回复" aria-pressed="false">
+          <svg class="icon"><use href="#i-speaker"/></svg><span>朗读</span>
+        </button>
+        <button class="btn-ghost" id="resetBtn" title="开始新对话">
+          <svg class="icon"><use href="#i-plus"/></svg><span>新对话</span>
+        </button>
+        <button class="btn-ghost" id="historyBtn" title="历史对话" hidden>
+          <svg class="icon"><use href="#i-clock"/></svg><span>历史</span>
+        </button>
+        <button class="btn-ghost" id="loginBtn" title="登录账号">
+          <svg class="icon"><use href="#i-user"/></svg><span>登录</span>
+        </button>
+        <div class="user-chip" id="userChip" hidden>
+          <span class="user-avatar"><svg class="icon"><use href="#i-user"/></svg></span>
+          <span id="userName"></span>
+          <button id="logoutBtn" title="退出登录"><svg class="icon"><use href="#i-logout"/></svg></button>
+        </div>
+        <button class="demo-toggle" id="demoBtn" title="演示模式：展示 Agent 内部工作过程" aria-pressed="false">
+          <svg class="icon"><use href="#i-sparkles"/></svg>
+        </button>
       </div>
+    </header>
+
+    <!-- ============ 演示工具条（默认隐藏） ============ -->
+    <div class="demo-bar" id="demoBar" hidden>
+      <span class="demo-bar-label"><svg class="icon"><use href="#i-sparkles"/></svg>演示模式</span>
+      <button class="demo-chip" id="traceToggle" aria-pressed="true">
+        <svg class="icon"><use href="#i-route"/></svg>执行轨迹
+      </button>
+      <button class="demo-chip" id="compareToggle" aria-pressed="false">
+        <svg class="icon"><use href="#i-columns"/></svg>对比模式
+      </button>
+      <a class="demo-chip" href="/admin" target="_blank">
+        <svg class="icon"><use href="#i-chart"/></svg>仪表盘
+      </a>
+      <a class="demo-chip" href="/admin/export_excel" target="_blank">
+        <svg class="icon"><use href="#i-download"/></svg>导出记录
+      </a>
+      <span class="demo-session">会话 <code id="sessionLabel">-</code></span>
     </div>
-  </main>
 
-  <footer class="composer">
-    <button class="mic-btn" id="micBtn" title="按住说话">
-      <span id="micIcon">🎤</span>
-    </button>
-    <textarea
-      id="input"
-      placeholder="跟我说几句话吧…（回车发送，Shift+回车换行）"
-      rows="1"
-    ></textarea>
-    <button class="send-btn" id="sendBtn">发送</button>
-  </footer>
+    <!-- ============ 主体三栏 ============ -->
+    <div class="main">
+      <aside class="sidebar" id="sidebar" hidden>
+        <div class="sidebar-head">
+          <span>历史对话</span>
+          <button id="sidebarClose" title="收起"><svg class="icon"><use href="#i-close"/></svg></button>
+        </div>
+        <div class="conv-list" id="convList"></div>
+      </aside>
 
-  <div class="status-bar">
-    <span>会话: <code id="sessionLabel">-</code></span>
-    <span id="statusText">就绪</span>
+      <section class="chat-col">
+        <main class="chat-area" id="chatArea"></main>
+        <footer class="composer">
+          <button class="mic-btn" id="micBtn" title="点一下，说句话">
+            <svg class="icon"><use href="#i-mic"/></svg>
+          </button>
+          <textarea id="input" placeholder="跟我说几句话吧…" rows="1"></textarea>
+          <button class="send-btn" id="sendBtn" title="发送">
+            <svg class="icon"><use href="#i-send"/></svg><span>发送</span>
+          </button>
+        </footer>
+        <div class="status-line" id="statusText"></div>
+      </section>
+
+      <aside class="trace-panel" id="tracePanel" hidden>
+        <div class="trace-head">
+          <svg class="icon"><use href="#i-route"/></svg>
+          <span>Agent 执行轨迹</span>
+        </div>
+        <div class="trace-query" id="traceQuery" hidden></div>
+        <div class="trace-steps" id="traceSteps"></div>
+        <div class="trace-foot">意图分诊 → 双路召回 → RRF 融合 → 精排 → 生成</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ============ 登录弹层 ============ -->
+  <div class="modal-backdrop" id="loginModal" hidden>
+    <div class="modal-card" role="dialog" aria-label="登录">
+      <button class="modal-close" id="modalClose"><svg class="icon"><use href="#i-close"/></svg></button>
+      <div class="modal-brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-blossom"/></svg></span>
+        <h2>欢迎回来</h2>
+        <p>登录后可以保存和回看历史对话</p>
+      </div>
+      <div class="modal-tabs">
+        <button class="active" data-tab="login">登录</button>
+        <button data-tab="register">注册</button>
+      </div>
+      <form id="authForm">
+        <label>用户名
+          <input type="text" id="authUsername" autocomplete="username" placeholder="字母、数字或下划线" required minlength="3" maxlength="20" />
+        </label>
+        <label>密码
+          <input type="password" id="authPassword" autocomplete="current-password" placeholder="至少 6 位" required minlength="6" maxlength="64" />
+        </label>
+        <label id="displayNameRow" hidden>怎么称呼您
+          <input type="text" id="authDisplayName" placeholder="例如：王奶奶（可不填）" maxlength="20" />
+        </label>
+        <p class="auth-error" id="authError" hidden></p>
+        <button type="submit" class="btn-primary" id="authSubmit">登录</button>
+      </form>
+      <div class="modal-divider"><span>或者</span></div>
+      <button class="btn-demo" id="demoLoginBtn">
+        <svg class="icon"><use href="#i-sparkles"/></svg>
+        一键体验演示账号
+      </button>
+      <p class="demo-hint">演示账号预置了一周的陪伴对话记录，可直接查看历史与统计</p>
+    </div>
   </div>
 
   <script src="/static/app.js"></script>

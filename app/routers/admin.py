@@ -1,17 +1,33 @@
-"""管理端 endpoint：导出对话日志为 Excel。
+"""管理端 endpoint：统计仪表盘数据 + 导出对话日志为 Excel。
 
-后续可加 Spring Security 风格的权限控制（admin only），现在为 MVP 不做。
+鉴权：设置了 ADMIN_TOKEN 时，所有 /admin/* 需带 X-Admin-Token 请求头
+或 ?token= 参数；未设置时不校验（本地开发模式）。公网部署务必设置。
 """
+import hmac
 from io import BytesIO
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import Response
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
+from ..config import get_settings
 from ..db import get_conn
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+
+def require_admin(
+    x_admin_token: str | None = Header(default=None, alias="X-Admin-Token"),
+    token: str | None = Query(default=None),
+) -> None:
+    s = get_settings()
+    if not s.admin_token:
+        return  # 未配置 → 开发模式不校验
+    supplied = x_admin_token or token or ""
+    if not hmac.compare_digest(supplied, s.admin_token):
+        raise HTTPException(status_code=401, detail="admin token 无效")
+
+
+router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
 
 
 _HEADERS = ["id", "时间", "会话", "角色", "意图", "风险", "日志级别", "内容"]
@@ -102,9 +118,16 @@ def export_excel(
 
 @router.get("/stats")
 def stats():
-    """快速看一眼日志分布，便于面试 demo 时演示数据。"""
+    """仪表盘数据：总量、意图/级别分布、14 天趋势、最近告警。"""
     with get_conn() as conn:
         total = conn.execute("SELECT COUNT(*) AS c FROM messages").fetchone()["c"]
+        sessions = conn.execute(
+            "SELECT COUNT(DISTINCT session_id) AS c FROM messages"
+        ).fetchone()["c"]
+        users = conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
+        alerts = conn.execute(
+            "SELECT COUNT(*) AS c FROM messages WHERE role='user' AND log_level='ALERT'"
+        ).fetchone()["c"]
         by_intent = conn.execute(
             "SELECT intent, COUNT(*) AS c FROM messages "
             "WHERE role='user' AND intent IS NOT NULL GROUP BY intent"
@@ -113,9 +136,25 @@ def stats():
             "SELECT log_level, COUNT(*) AS c FROM messages "
             "WHERE role='user' AND log_level IS NOT NULL GROUP BY log_level"
         ).fetchall()
+        by_day = conn.execute(
+            "SELECT date(created_at) AS d, COUNT(*) AS c FROM messages "
+            "WHERE role='user' AND created_at >= datetime('now', '-13 days') "
+            "GROUP BY date(created_at) ORDER BY d"
+        ).fetchall()
+        recent_alerts = conn.execute(
+            "SELECT created_at, session_id, intent, risk_level, log_level, "
+            "       substr(content, 1, 60) AS content "
+            "FROM messages WHERE role='user' AND log_level IN ('WARN','ALERT') "
+            "ORDER BY id DESC LIMIT 10"
+        ).fetchall()
 
     return {
         "total_messages": total,
+        "total_sessions": sessions,
+        "total_users": users,
+        "total_alerts": alerts,
         "by_intent": {r["intent"]: r["c"] for r in by_intent},
         "by_log_level": {r["log_level"]: r["c"] for r in by_level},
+        "by_day": [{"date": r["d"], "count": r["c"]} for r in by_day],
+        "recent_alerts": [dict(r) for r in recent_alerts],
     }

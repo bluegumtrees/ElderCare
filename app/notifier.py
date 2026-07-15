@@ -5,12 +5,22 @@
 - 异步发送：调用方用 asyncio.create_task() 派发，不阻塞流式响应。
 - 不同 intent 用不同邮件标题，方便家属在邮箱里快速识别紧急程度。
 """
+import sys
 from datetime import datetime
 from email.message import EmailMessage
 
 import aiosmtplib
 
 from .config import get_settings
+
+
+def _safe_print(text: str) -> None:
+    """预警链路的日志绝不能自己崩：Windows GBK 控制台打不出 emoji 时降级替换。"""
+    try:
+        print(text, flush=True)
+    except UnicodeEncodeError:
+        enc = sys.stdout.encoding or "utf-8"
+        print(text.encode(enc, errors="replace").decode(enc), flush=True)
 
 _SUBJECT_PREFIX = {
     "EMERGENCY": "🚨【紧急】",
@@ -51,13 +61,12 @@ async def send_alert(intent: str, risk: str, session_id: str, user_message: str)
     body = _compose_body(intent, risk, session_id, user_message)
 
     if not s.smtp_enabled:
-        print(
+        _safe_print(
             "\n========== [DEV-NOTIFIER] 预警未发送（SMTP 未配置）==========\n"
             f"收件人: {s.alert_to_email or '<未配置>'}\n"
             f"主题  : {subject}\n"
             f"正文  :\n{body}\n"
-            "============================================================\n",
-            flush=True,
+            "============================================================\n"
         )
         return
 
@@ -82,7 +91,7 @@ async def send_alert(intent: str, risk: str, session_id: str, user_message: str)
             start_tls=start_tls,
             timeout=10,
         )
-        print(f"[notifier] 预警邮件已发送 → {s.alert_to_email} ({intent})", flush=True)
+        _safe_print(f"[notifier] 预警邮件已发送 → {s.alert_to_email} ({intent})")
     except Exception as e:
         # 真发送失败不抛异常，否则会污染 SSE 流
-        print(f"[notifier] 邮件发送失败：{e!r}", flush=True)
+        _safe_print(f"[notifier] 邮件发送失败：{e!r}")

@@ -55,6 +55,10 @@ RUN python scripts/ingest_dataset.py \
         --max-rows 5000 \
     || echo "[build] psych 数据集 ingest 跳过，回退到样例数据"
 
+# 预构建 BM25 索引缓存（jieba 全量分词 ~10s 移到 build 阶段，
+# 运行时启动直接 load pickle，冷启动再省一截）
+RUN python -c "from app.bm25_store import init_all_indexes; init_all_indexes(['health','psych'])"
+
 # HF Spaces 默认端口
 EXPOSE 7860
 

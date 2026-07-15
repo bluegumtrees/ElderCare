@@ -6,17 +6,18 @@
 - 工业最佳实践：用向量做"宽召回 Top-K"，用 Rerank 做"精排 Top-N"
 
 模型选择：BAAI/bge-reranker-base ≈ 280M 参数，中文效果稳，首次下载约 1.1GB。
+sentence_transformers 懒加载（同 embeddings.py），不拖慢服务启动。
 """
-from sentence_transformers import CrossEncoder
-
 from .config import get_settings
 
-_model: CrossEncoder | None = None
+_model = None
 
 
-def get_reranker() -> CrossEncoder:
+def get_reranker():
     global _model
     if _model is None:
+        from sentence_transformers import CrossEncoder
+
         s = get_settings()
         _model = CrossEncoder(s.reranker_model)
     return _model
