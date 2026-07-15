@@ -9,7 +9,7 @@ import hashlib
 import hmac
 import secrets
 
-from fastapi import Cookie, Depends, HTTPException
+from fastapi import Cookie, Depends, Header, HTTPException
 
 from .db import get_user_by_token
 
@@ -42,13 +42,25 @@ def new_token() -> str:
     return secrets.token_urlsafe(32)
 
 
+def extract_token(
+    authorization: str | None, cookie_token: str | None
+) -> str | None:
+    """优先 Authorization: Bearer（HF Space 的跨站 iframe 里 cookie 会被浏览器
+    屏蔽，header 是主通道），cookie 作为直连访问时的备用。"""
+    if authorization and authorization.lower().startswith("bearer "):
+        return authorization[7:].strip() or None
+    return cookie_token
+
+
 def get_optional_user(
+    authorization: str | None = Header(default=None),
     eldercare_token: str | None = Cookie(default=None, alias=COOKIE_NAME),
 ) -> dict | None:
-    """cookie 有效则返回 {id, username, display_name}，否则 None。匿名可用的端点用它。"""
-    if not eldercare_token:
+    """token 有效则返回 {id, username, display_name}，否则 None。匿名可用的端点用它。"""
+    token = extract_token(authorization, eldercare_token)
+    if not token:
         return None
-    return get_user_by_token(eldercare_token)
+    return get_user_by_token(token)
 
 
 def require_user(user: dict | None = Depends(get_optional_user)) -> dict:

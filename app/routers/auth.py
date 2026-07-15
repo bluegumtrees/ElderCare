@@ -4,8 +4,7 @@
 - JS 摸不到 cookie（防 XSS 偷 token）
 - token 存 SQLite，登出即删、到期失效，可随时撤销
 """
-from fastapi import APIRouter, Depends, HTTPException, Response
-from fastapi import Cookie
+from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Response
 
 from ..config import get_settings
 from ..db import (
@@ -18,6 +17,7 @@ from ..demo_seed import ensure_demo_account
 from ..schemas import LoginRequest, RegisterRequest
 from ..security import (
     COOKIE_NAME,
+    extract_token,
     get_optional_user,
     hash_password,
     new_token,
@@ -28,6 +28,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 def _login_response(response: Response, user_id: int, username: str, display_name: str) -> dict:
+    """token 走两条通道：
+    - JSON body → 前端存 localStorage，之后带 Authorization 头（iframe 内主通道）
+    - cookie（SameSite=None 允许跨站 iframe；Safari 等仍可能拦，所以只是备用）
+    """
     s = get_settings()
     token = new_token()
     create_auth_token(token, user_id, s.auth_token_ttl_days)
@@ -36,10 +40,11 @@ def _login_response(response: Response, user_id: int, username: str, display_nam
         token,
         max_age=s.auth_token_ttl_days * 86400,
         httponly=True,
-        samesite="lax",
+        samesite="none",
+        secure=True,
         path="/",
     )
-    return {"username": username, "display_name": display_name}
+    return {"username": username, "display_name": display_name, "token": token}
 
 
 @router.post("/register")
@@ -77,10 +82,12 @@ def demo_login(response: Response):
 @router.post("/logout")
 def logout(
     response: Response,
+    authorization: str | None = Header(default=None),
     eldercare_token: str | None = Cookie(default=None, alias=COOKIE_NAME),
 ):
-    if eldercare_token:
-        delete_auth_token(eldercare_token)
+    token = extract_token(authorization, eldercare_token)
+    if token:
+        delete_auth_token(token)
     response.delete_cookie(COOKIE_NAME, path="/")
     return {"ok": True}
 

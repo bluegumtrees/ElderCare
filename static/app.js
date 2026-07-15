@@ -89,6 +89,15 @@ function setStatus(text) {
   statusText.textContent = text || "";
 }
 
+// 登录 token 存 localStorage、走 Authorization 头：
+// HF Space 把应用嵌在跨站 iframe 里，SameSite cookie 会被浏览器屏蔽，头字段不受影响
+const TOKEN_KEY = "eldercare_auth_token";
+
+function authHeaders() {
+  const t = localStorage.getItem(TOKEN_KEY);
+  return t ? { Authorization: "Bearer " + t } : {};
+}
+
 function escapeHTML(s) {
   return s.replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -368,7 +377,7 @@ function handleStageEvent(data) {
 async function ssePost(url, body, onEvent) {
   const resp = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(body),
   });
   if (!resp.ok || !resp.body) throw new Error(`HTTP ${resp.status}`);
@@ -629,6 +638,7 @@ authForm.addEventListener("submit", async (e) => {
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.detail || "登录失败");
+    if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
     await onLoggedIn();
     closeModal();
   } catch (err) {
@@ -644,6 +654,8 @@ demoLoginBtn.addEventListener("click", async () => {
   try {
     const resp = await fetch("/auth/demo", { method: "POST" });
     if (!resp.ok) throw new Error("演示账号暂不可用");
+    const data = await resp.json();
+    if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
     await onLoggedIn();
     closeModal();
     sidebar.hidden = false; // 直接展示预置的历史对话
@@ -656,7 +668,8 @@ demoLoginBtn.addEventListener("click", async () => {
 });
 
 logoutBtn.addEventListener("click", async () => {
-  await fetch("/auth/logout", { method: "POST" });
+  await fetch("/auth/logout", { method: "POST", headers: authHeaders() });
+  localStorage.removeItem(TOKEN_KEY);
   state.user = null;
   updateAuthUI();
   sidebar.hidden = true;
@@ -664,7 +677,7 @@ logoutBtn.addEventListener("click", async () => {
 
 async function fetchMe() {
   try {
-    const resp = await fetch("/auth/me");
+    const resp = await fetch("/auth/me", { headers: authHeaders() });
     const data = await resp.json();
     state.user = data.user;
   } catch {
@@ -700,7 +713,7 @@ function relTime(sqliteUTC) {
 
 async function loadConversations() {
   try {
-    const resp = await fetch("/conversations");
+    const resp = await fetch("/conversations", { headers: authHeaders() });
     if (!resp.ok) return;
     const data = await resp.json();
     const items = data.conversations || [];
@@ -733,7 +746,7 @@ convList.addEventListener("click", (e) => {
 
 async function loadConversation(sid) {
   try {
-    const resp = await fetch(`/conversations/${encodeURIComponent(sid)}/messages`);
+    const resp = await fetch(`/conversations/${encodeURIComponent(sid)}/messages`, { headers: authHeaders() });
     if (!resp.ok) throw new Error("会话不存在");
     const data = await resp.json();
     state.sessionId = sid;
