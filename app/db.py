@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from contextlib import closing, contextmanager
 from pathlib import Path
@@ -33,6 +34,7 @@ def init_db() -> None:
                 intent TEXT,
                 risk_level TEXT,
                 log_level TEXT,
+                refs TEXT,
                 created_at TEXT DEFAULT (datetime('now'))
             );
             CREATE INDEX IF NOT EXISTS idx_messages_session
@@ -64,6 +66,10 @@ def init_db() -> None:
                 ON conversations(user_id, updated_at);
             """
         )
+        # 迁移：老库的 messages 表补 refs 列（存检索快照 JSON，历史回看还原引用）
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(messages)")]
+        if "refs" not in cols:
+            conn.execute("ALTER TABLE messages ADD COLUMN refs TEXT")
 
 
 # ============ 消息 ============
@@ -75,12 +81,13 @@ def save_message(
     intent: str | None = None,
     risk_level: str | None = None,
     log_level: str | None = None,
+    refs: str | None = None,
 ) -> None:
     with get_conn() as conn:
         conn.execute(
-            "INSERT INTO messages (session_id, role, content, intent, risk_level, log_level) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (session_id, role, content, intent, risk_level, log_level),
+            "INSERT INTO messages (session_id, role, content, intent, risk_level, log_level, refs) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (session_id, role, content, intent, risk_level, log_level, refs),
         )
 
 
@@ -96,14 +103,23 @@ def get_recent_messages(session_id: str, n_turns: int = 6) -> list[dict]:
 
 
 def get_session_messages(session_id: str, limit: int = 200) -> list[dict]:
-    """整段会话的完整消息（带意图/风险标注），历史回看用。"""
+    """整段会话的完整消息（带意图/风险标注 + 检索快照），历史回看用。"""
     with get_conn() as conn:
         rows = conn.execute(
-            "SELECT role, content, intent, risk_level, log_level, created_at "
+            "SELECT role, content, intent, risk_level, log_level, refs, created_at "
             "FROM messages WHERE session_id = ? ORDER BY id ASC LIMIT ?",
             (session_id, limit),
         ).fetchall()
-    return [dict(r) for r in rows]
+    out = []
+    for r in rows:
+        m = dict(r)
+        if m.get("refs"):
+            try:
+                m["refs"] = json.loads(m["refs"])
+            except (json.JSONDecodeError, TypeError):
+                m["refs"] = None
+        out.append(m)
+    return out
 
 
 # ============ 用户 ============

@@ -770,8 +770,11 @@ async function loadConversation(sid) {
         wrap.innerHTML = botShellHTML();
         wrap.querySelector(".cursor")?.remove();
         if (m.intent) setIntentBadge(wrap, m.intent, m.risk_level, m.log_level || "INFO");
+        // 落库了检索快照的消息可以完整还原引用；老消息没有快照，徽章只作标记
+        const refs = Array.isArray(m.refs) && m.refs.length ? m.refs : null;
         wrap.querySelector('[data-role="text"]').innerHTML =
-          renderMarkdown(m.content, { staticCite: true });
+          renderMarkdown(m.content, { staticCite: !refs });
+        if (refs) setRetrievedChunks(wrap, refs);
         chatArea.appendChild(wrap);
       }
     }

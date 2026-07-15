@@ -202,6 +202,7 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
             )
 
         parts: list[str] = []
+        refs_json = None
         t_gen = None
         first_token_ms = None
 
@@ -223,7 +224,11 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
                         yield _sse("stage", payload)
                     else:
                         hits = payload["hits"]
-                yield _sse("retrieved", {"hits": _hits_preview(hits)})
+                hits_preview = _hits_preview(hits)
+                if hits_preview:
+                    # 随消息落库，历史回看时还原引用来源
+                    refs_json = json.dumps(hits_preview, ensure_ascii=False)
+                yield _sse("retrieved", {"hits": hits_preview})
 
                 if intent == "HEALTH":
                     template = HEALTH_PROMPT
@@ -282,6 +287,7 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
             intent=intent,
             risk_level=risk,
             log_level=log_level,
+            refs=refs_json,
         )
         yield _sse(
             "done",
