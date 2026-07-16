@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -10,7 +11,24 @@ from .bm25_store import init_all_indexes
 from .config import get_settings
 from .db import init_db
 from .demo_seed import ensure_demo_account
+from .notifier import send_daily_digest
 from .routers import admin, auth, chat, history
+
+
+async def _daily_digest_loop() -> None:
+    """每天 digest_hour 整点发送 WARN/ALERT 汇总（无内容自动跳过）。"""
+    while True:
+        now = datetime.now()
+        target = now.replace(
+            hour=get_settings().digest_hour, minute=0, second=0, microsecond=0
+        )
+        if target <= now:
+            target += timedelta(days=1)
+        await asyncio.sleep((target - now).total_seconds())
+        try:
+            await send_daily_digest()
+        except Exception as e:
+            print(f"[digest] 每日汇总失败（明天再试）：{e!r}", flush=True)
 
 
 @asynccontextmanager
@@ -32,7 +50,9 @@ async def lifespan(app: FastAPI):
             print(f"[warn] BM25 预热失败（检索请求时将按需重试）：{e!r}", flush=True)
 
     asyncio.create_task(_warm_bm25())
+    digest_task = asyncio.create_task(_daily_digest_loop())
     yield
+    digest_task.cancel()
 
 
 app = FastAPI(title="ElderCare RAG", version="0.2.0", lifespan=lifespan)

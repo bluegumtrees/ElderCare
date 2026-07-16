@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     # 管理端鉴权：为空时不校验（本地开发），公网部署务必设置
     admin_token: str = ""
 
+    # 每日 WARN/ALERT 汇总邮件的发送整点（本地时区 0-23）
+    digest_hour: int = 8
+
     # 登录会话
     auth_token_ttl_days: int = 30
     # demo 账号（启动时自动创建并预置演示对话）

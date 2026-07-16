@@ -352,6 +352,17 @@ _DEMO_CONVERSATIONS: list[tuple[int, str, list[tuple]]] = [
 ]
 
 
+# demo 账号的预置长期记忆（与上面对话内容自洽）
+_DEMO_FACTS = [
+    "血压偏高（150 左右），正在按时吃降压药",
+    "独居，子女都在外地工作",
+    "孙子暑假要回来，最爱吃她做的红烧肉",
+    "每天早上去公园快走半小时",
+    "近期夜里易醒，正在调理睡眠",
+    "遇到过中奖诈骗电话，已学会挂断",
+]
+
+
 def ensure_demo_account() -> None:
     """幂等：demo 用户已存在则什么都不做。"""
     s = get_settings()
@@ -391,7 +402,13 @@ def ensure_demo_account() -> None:
                     ),
                 )
 
+        conn.executemany(
+            "INSERT INTO user_facts (owner_key, fact) VALUES (?, ?)",
+            [(f"u{user_id}", f) for f in _DEMO_FACTS],
+        )
+
     print(
-        f"[demo] 已创建演示账号 {s.demo_username}（{len(_DEMO_CONVERSATIONS)} 段预置对话）",
+        f"[demo] 已创建演示账号 {s.demo_username}"
+        f"（{len(_DEMO_CONVERSATIONS)} 段预置对话 + {len(_DEMO_FACTS)} 条记忆）",
         flush=True,
     )

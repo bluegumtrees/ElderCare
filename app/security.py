@@ -48,7 +48,9 @@ def extract_token(
     """优先 Authorization: Bearer（HF Space 的跨站 iframe 里 cookie 会被浏览器
     屏蔽，header 是主通道），cookie 作为直连访问时的备用。"""
     if authorization and authorization.lower().startswith("bearer "):
-        return authorization[7:].strip() or None
+        token = authorization[7:].strip()
+        if token:
+            return token
     return cookie_token
 
 

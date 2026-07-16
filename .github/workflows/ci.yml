@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # 只装单测需要的轻依赖：torch/chromadb 是懒加载的，纯函数测试不碰它们
+      - name: Install dependencies
+        run: |
+          pip install fastapi "uvicorn[standard]" sse-starlette openai \
+            pydantic pydantic-settings aiosmtplib openpyxl \
+            rank-bm25 jieba numpy python-dotenv pytest
+      - name: Run tests
+        run: pytest -q

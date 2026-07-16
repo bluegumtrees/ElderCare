@@ -133,6 +133,9 @@
       <button class="demo-chip" id="compareToggle" aria-pressed="false">
         <svg class="icon"><use href="#i-columns"/></svg>对比模式
       </button>
+      <button class="demo-chip" id="memoryChip">
+        <svg class="icon"><use href="#i-heart"/></svg>记忆
+      </button>
       <a class="demo-chip" href="/admin" target="_blank">
         <svg class="icon"><use href="#i-chart"/></svg>仪表盘
       </a>
@@ -210,6 +213,19 @@
         一键体验演示账号
       </button>
       <p class="demo-hint">演示账号预置了一周的陪伴对话记录，可直接查看历史与统计</p>
+    </div>
+  </div>
+
+  <!-- ============ 记忆弹层（演示模式） ============ -->
+  <div class="modal-backdrop" id="memoryModal" hidden>
+    <div class="modal-card" role="dialog" aria-label="长期记忆">
+      <button class="modal-close" id="memoryClose"><svg class="icon"><use href="#i-close"/></svg></button>
+      <div class="modal-brand">
+        <span class="brand-mark" style="background: var(--amber-soft); color: var(--amber);"><svg class="icon"><use href="#i-heart"/></svg></span>
+        <h2>记住的事</h2>
+        <p>助手从聊天里记下的长期信息，会自然融入之后的对话</p>
+      </div>
+      <ul class="memory-list" id="memoryList"></ul>
     </div>
   </div>
 

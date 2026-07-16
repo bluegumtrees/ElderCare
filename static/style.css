@@ -770,6 +770,25 @@ textarea#input::placeholder { color: var(--text-faint); }
   content: ""; flex: 1; height: 1px; background: var(--border);
 }
 
+.memory-list { list-style: none; max-height: 320px; overflow-y: auto; }
+.memory-list li {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 9px 4px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  border-bottom: 1px dashed var(--border);
+}
+.memory-list li:last-child { border-bottom: none; }
+.memory-list li::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+.memory-empty { text-align: center; color: var(--text-faint); padding: 24px 0; font-size: 14px; }
+
 .btn-demo {
   width: 100%;
   display: flex; align-items: center; justify-content: center; gap: 8px;

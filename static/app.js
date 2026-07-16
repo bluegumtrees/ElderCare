@@ -582,6 +582,31 @@ traceToggle.addEventListener("click", () => {
   tracePanel.hidden = !(state.demoMode && state.traceOpen);
 });
 
+// 记忆面板
+const memoryModal = $("memoryModal");
+$("memoryChip").addEventListener("click", async () => {
+  const list = $("memoryList");
+  list.innerHTML = `<div class="memory-empty">正在翻小本本…</div>`;
+  memoryModal.hidden = false;
+  try {
+    const resp = await fetch(
+      `/memory?session_id=${encodeURIComponent(state.sessionId)}`,
+      { headers: authHeaders() }
+    );
+    const data = await resp.json();
+    const facts = data.facts || [];
+    list.innerHTML = facts.length
+      ? facts.map((f) => `<li>${escapeHTML(f)}</li>`).join("")
+      : `<div class="memory-empty">还没记下什么，多聊几句就有了</div>`;
+  } catch {
+    list.innerHTML = `<div class="memory-empty">暂时看不了，稍后再试</div>`;
+  }
+});
+$("memoryClose").addEventListener("click", () => { memoryModal.hidden = true; });
+memoryModal.addEventListener("click", (e) => {
+  if (e.target === memoryModal) memoryModal.hidden = true;
+});
+
 compareToggle.addEventListener("click", () => {
   state.compareMode = !state.compareMode;
   compareToggle.setAttribute("aria-pressed", String(state.compareMode));

@@ -64,6 +64,15 @@ def init_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_conversations_user
                 ON conversations(user_id, updated_at);
+
+            CREATE TABLE IF NOT EXISTS user_facts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                owner_key TEXT NOT NULL,
+                fact TEXT NOT NULL,
+                created_at TEXT DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_facts_owner
+                ON user_facts(owner_key, id);
             """
         )
         # 迁移：老库的 messages 表补 refs 列（存检索快照 JSON，历史回看还原引用）
@@ -203,3 +212,40 @@ def get_conversation(session_id: str) -> dict | None:
             "SELECT * FROM conversations WHERE session_id = ?", (session_id,)
         ).fetchone()
     return dict(row) if row else None
+
+
+# ============ 每日汇总 ============
+
+def get_warn_messages_since_hours(hours: int = 24) -> list[dict]:
+    """近 N 小时的 WARN/ALERT 用户消息，ALERT 优先、新在前。每日汇总邮件用。"""
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT created_at, session_id, intent, risk_level, log_level, "
+            "       substr(content, 1, 80) AS content "
+            "FROM messages WHERE role='user' AND log_level IN ('WARN','ALERT') "
+            "AND created_at >= datetime('now', ?) "
+            "ORDER BY CASE log_level WHEN 'ALERT' THEN 0 ELSE 1 END, id DESC",
+            (f"-{hours} hours",),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# ============ 长期记忆（用户画像事实） ============
+
+def list_facts(owner_key: str, limit: int = 20) -> list[str]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT fact FROM user_facts WHERE owner_key = ? ORDER BY id LIMIT ?",
+            (owner_key, limit),
+        ).fetchall()
+    return [r["fact"] for r in rows]
+
+
+def replace_facts(owner_key: str, facts: list[str]) -> None:
+    """全量替换：记忆提取器每次输出合并后的完整列表，天然去重、天然淘汰过期项。"""
+    with get_conn() as conn:
+        conn.execute("DELETE FROM user_facts WHERE owner_key = ?", (owner_key,))
+        conn.executemany(
+            "INSERT INTO user_facts (owner_key, fact) VALUES (?, ?)",
+            [(owner_key, f) for f in facts],
+        )

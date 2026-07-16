@@ -23,6 +23,7 @@ from sse_starlette.sse import EventSourceResponse
 from ..db import get_recent_messages, save_message, touch_conversation
 from ..intent import classify_intent, derive_log_level
 from ..llm import stream_chat
+from ..memory import format_memory_prompt, get_memory, owner_key_for, update_memory
 from ..notifier import send_alert
 from ..retrieval import retrieve_events
 from ..schemas import ChatRequest
@@ -68,6 +69,15 @@ def _hits_preview(hits: list[dict]) -> list[dict]:
                 item[key] = round(float(h[key]), 4)
         out.append(item)
     return out
+
+
+# ============ /memory：当前用户/会话的长期记忆 ============
+
+@router.get("/memory")
+async def memory(
+    session_id: str = "default", user: dict | None = Depends(get_optional_user)
+):
+    return {"facts": get_memory(owner_key_for(user, session_id))}
 
 
 # ============ /chat：裸 LLM ============
@@ -151,12 +161,19 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
     而不是等分类做完才看到响应开头。
     """
     user_id = user["id"] if user else None
+    owner_key = owner_key_for(user, req.session_id)
 
     async def event_gen():
         t_start = time.perf_counter()
 
         # 先取历史（不含本条），再落库本条 —— 否则 LLM 会把当前消息看到两遍
         history = get_recent_messages(req.session_id, n_turns=6)
+
+        # 长期记忆注入：把画像事实作为附加 system 提示
+        facts = get_memory(owner_key)
+        memory_system = (
+            [{"role": "system", "content": format_memory_prompt(facts)}] if facts else []
+        )
 
         t0 = time.perf_counter()
         cls = await classify_intent(req.message, history)
@@ -212,6 +229,7 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
             if intent == "CHAT":
                 messages = (
                     [{"role": "system", "content": CHAT_SYSTEM}]
+                    + memory_system
                     + history
                     + [{"role": "user", "content": req.message}]
                 )
@@ -239,6 +257,7 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
                 )
                 messages = (
                     [{"role": "system", "content": CHAT_SYSTEM}]
+                    + memory_system
                     + history
                     + [{"role": "user", "content": user_prompt}]
                 )
@@ -289,6 +308,9 @@ async def agent(req: ChatRequest, user: dict | None = Depends(get_optional_user)
             log_level=log_level,
             refs=refs_json,
         )
+        # 异步提取长期记忆，不阻塞收尾
+        if full:
+            asyncio.create_task(update_memory(owner_key, req.message, full))
         yield _sse(
             "done",
             {

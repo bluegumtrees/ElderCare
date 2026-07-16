@@ -1,5 +1,7 @@
 # ElderCare 银发陪伴智能体
 
+![CI](https://github.com/bluegumtrees/ElderCare/actions/workflows/ci.yml/badge.svg)
+
 面向独居老人的 AI 陪伴助手。基于 **FastAPI + 动态路由 RAG** 构建，将闲聊 / 健康咨询 / 心理倾诉 / 医疗急症 / 电信诈骗五类意图自动分诊；**三阶段检索**（dense + sparse → RRF → CrossEncoder rerank）保证 RAG 质量，**答案附带可点击引用源**使回答完全可解释；高风险场景实时邮件通知家属。
 
 **在线 Demo**：https://huggingface.co/spaces/bluegum/eldercare-rag
@@ -16,15 +18,23 @@
 | Agent 执行轨迹 | 演示模式下逐阶段点亮流水线时间线（分诊 → 双路召回 → RRF → 精排 → 生成），含各阶段耗时 |
 | 对比模式 | 同一问题双栏同时流式输出「完整 Agent」vs「裸 LLM」，直观展示 RAG 收益 |
 | 账号与历史 | 登录 / 注册 / demo 一键体验（纯标准库 PBKDF2 + 服务端 token），历史会话随时回看续聊；登录态走 Bearer 头，兼容 HF Space 跨站 iframe |
+| 长期记忆 | 小模型异步提取用户画像（健康、家庭、习惯、日程），注入后续对话，越聊越懂；演示模式可查看"记住的事" |
 | 异步预警 | 高危场景 `asyncio.create_task` 派发邮件，不阻塞流式响应 |
-| 三级日志 | INFO / WARN / ALERT，避免家属告警疲劳 |
+| 三级日志 | INFO 存档 / WARN 进每日汇总邮件 / ALERT 实时通知，避免家属告警疲劳 |
 | 管理仪表盘 | `/admin` 零依赖 SVG 图表：意图分布、级别分布、14 天趋势、最近告警，`ADMIN_TOKEN` 鉴权 |
 | 适老化与移动端 | Web Speech API 中文语音输入输出、三档大字号、移动端双排顶栏适配，零依赖、零成本 |
 | 量化评测 | LLM-as-judge 在 30 条评测集上对比三条检索流水线 |
 
 ## 评测结果
 
-30 条评测集 × 3 条流水线 × 3 个 RAGAS 风格指标（LLM-as-judge）：
+**意图分类**（21 条标注样本，覆盖五类意图 × 三档风险，`qwen3.5-flash` + few-shot JSON 输出）：
+
+| 指标 | 准确率 |
+|---|---|
+| 意图五分类 | **21/21 = 100%** |
+| 风险等级（意图正确时） | **21/21 = 100%** |
+
+**检索流水线**：30 条评测集 × 3 条流水线 × 3 个 RAGAS 风格指标（LLM-as-judge）：
 
 | 指标 | 纯向量 | +rerank | +hybrid+rerank |
 |---|---|---|---|
@@ -138,14 +148,15 @@ static/             # 前端（index.html + admin.html 仪表盘，零依赖）
 scripts/            # 数据接入与评测
 ```
 
-## 评测
+## 评测与测试
 
 ```bash
-python scripts/eval_intent.py    # 意图分类准确率
-python scripts/eval_rag.py       # 三条流水线 RAGAS 风格对比
+python scripts/eval_intent.py    # 意图分类准确率（LLM 评测）
+python scripts/eval_rag.py       # 三条流水线 RAGAS 风格对比（LLM-as-judge）
+pytest                           # 单元测试（RRF 融合 / 意图解析兜底 / 密码哈希 / 数据层）
 ```
 
-报告输出至 `reports/eval_<时间戳>.{json,md}`。
+评测报告输出至 `reports/eval_<时间戳>.{json,md}`；单测在 GitHub Actions 上随每次 push 自动跑（见顶部徽章）。
 
 ## 免责声明
 

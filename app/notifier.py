@@ -54,15 +54,12 @@ def _compose_subject(intent: str) -> str:
     return f"{prefix}ElderCare 智能体高风险通知"
 
 
-async def send_alert(intent: str, risk: str, session_id: str, user_message: str) -> None:
-    """触发一次高风险预警。SMTP 未配置时走 stdout 假发送。"""
+async def _deliver(subject: str, body: str) -> None:
+    """真发邮件或 dev 模式打印，send_alert / send_daily_digest 共用。"""
     s = get_settings()
-    subject = _compose_subject(intent)
-    body = _compose_body(intent, risk, session_id, user_message)
-
     if not s.smtp_enabled:
         _safe_print(
-            "\n========== [DEV-NOTIFIER] 预警未发送（SMTP 未配置）==========\n"
+            "\n========== [DEV-NOTIFIER] 未发送（SMTP 未配置）==========\n"
             f"收件人: {s.alert_to_email or '<未配置>'}\n"
             f"主题  : {subject}\n"
             f"正文  :\n{body}\n"
@@ -91,7 +88,54 @@ async def send_alert(intent: str, risk: str, session_id: str, user_message: str)
             start_tls=start_tls,
             timeout=10,
         )
-        _safe_print(f"[notifier] 预警邮件已发送 → {s.alert_to_email} ({intent})")
+        _safe_print(f"[notifier] 邮件已发送 → {s.alert_to_email}（{subject[:20]}…）")
     except Exception as e:
-        # 真发送失败不抛异常，否则会污染 SSE 流
+        # 真发送失败不抛异常，否则会污染调用方
         _safe_print(f"[notifier] 邮件发送失败：{e!r}")
+
+
+async def send_alert(intent: str, risk: str, session_id: str, user_message: str) -> None:
+    """触发一次高风险预警。SMTP 未配置时走 stdout 假发送。"""
+    subject = _compose_subject(intent)
+    body = _compose_body(intent, risk, session_id, user_message)
+    await _deliver(subject, body)
+
+
+async def send_daily_digest() -> None:
+    """每日汇总：近 24 小时的 WARN/ALERT 用户消息打包成一封邮件。
+
+    没有可汇总的内容就跳过——避免家属被空邮件骚扰（告警疲劳的反面）。
+    """
+    from .db import get_warn_messages_since_hours
+
+    rows = get_warn_messages_since_hours(24)
+    if not rows:
+        _safe_print("[digest] 近 24 小时无 WARN/ALERT，跳过每日汇总")
+        return
+
+    alerts = [r for r in rows if r["log_level"] == "ALERT"]
+    warns = [r for r in rows if r["log_level"] == "WARN"]
+    desc = {"EMERGENCY": "急症", "FRAUD": "诈骗", "PSYCH": "心理", "HEALTH": "健康"}
+
+    lines = [
+        f"过去 24 小时共记录 {len(alerts)} 条紧急预警、{len(warns)} 条关注事项。",
+        "",
+    ]
+    if alerts:
+        lines.append("【紧急预警（已实时通知）】")
+        for r in alerts:
+            lines.append(
+                f"- {r['created_at']} [{desc.get(r['intent'], r['intent'])}] 「{r['content']}」"
+            )
+        lines.append("")
+    if warns:
+        lines.append("【需要关注（建议近期联系老人聊聊）】")
+        for r in warns:
+            lines.append(
+                f"- {r['created_at']} [{desc.get(r['intent'], r['intent'])}] 「{r['content']}」"
+            )
+        lines.append("")
+    lines.append("—— ElderCare 智能体每日汇总")
+
+    subject = f"【每日汇总】ElderCare：{len(alerts)} 条预警 / {len(warns)} 条关注"
+    await _deliver(subject, "\n".join(lines))
