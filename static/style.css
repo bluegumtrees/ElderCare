@@ -65,8 +65,7 @@ code { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-si
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -87,7 +86,8 @@ code { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-si
 .brand-name { font-size: 18px; font-weight: 700; color: var(--primary-dark); letter-spacing: 0.2px; }
 .brand-sub { font-size: 12.5px; color: var(--text-faint); }
 
-.topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.topbar-auth { display: flex; align-items: center; gap: 8px; }
 
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 6px;
@@ -811,9 +811,14 @@ textarea#input::placeholder { color: var(--text-faint); }
 }
 
 @media (max-width: 760px) {
-  .topbar { padding: 8px 12px; }
+  /* 顶栏两排：第一排 品牌 + 账号/演示，第二排 工具按钮均布 */
+  .topbar { flex-wrap: wrap; row-gap: 8px; padding: 8px 12px; }
+  .brand { flex: 1; min-width: 0; }
   .brand-sub { display: none; }
-  .brand-mark { width: 38px; height: 38px; font-size: 21px; }
+  .brand-mark { width: 36px; height: 36px; font-size: 20px; }
+  .brand-name { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-auth { margin-left: auto; flex-shrink: 0; }
+  .topbar-actions { order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
   .btn-ghost span, .pill-toggle span { display: none; }
   .btn-ghost, .pill-toggle { padding: 9px 11px; }
   .font-toggle button { padding: 8px 8px; font-size: 0; gap: 0; }
@@ -839,4 +844,10 @@ textarea#input::placeholder { color: var(--text-faint); }
   .send-btn { padding: 0 16px; height: 48px; font-size: 16px; }
   .send-btn span { display: none; }
   textarea#input { padding: 11px 13px; }
+}
+
+@media (max-width: 420px) {
+  #userName { display: none; }  /* 超小屏账号徽标只留头像和登出 */
+  .user-chip { gap: 4px; }
+  .demo-toggle { width: 38px; height: 38px; }
 }
