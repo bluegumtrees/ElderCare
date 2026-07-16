@@ -7,6 +7,8 @@
 **在线 Demo**：https://huggingface.co/spaces/bluegum/eldercare-rag
 登录页点击「一键体验演示账号」，可直接查看预置的一周陪伴记录与管理仪表盘。
 
+![演示：意图分诊 → 三阶段检索轨迹 → 引用溯源 → 历史回看](docs/demo.gif)
+
 ## 核心特性
 
 | 模块 | 能力 |
