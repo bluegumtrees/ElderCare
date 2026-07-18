@@ -749,10 +749,13 @@ async function loadConversations() {
     convList.innerHTML = items
       .map(
         (c) => `
-      <button class="conv-item" data-sid="${escapeHTML(c.session_id)}">
-        <div class="conv-title">${escapeHTML(c.title || "未命名对话")}</div>
-        <div class="conv-meta"><span>${relTime(c.updated_at)}</span><span>${c.message_count} 条</span></div>
-      </button>`
+      <div class="conv-item" data-sid="${escapeHTML(c.session_id)}">
+        <div class="conv-main">
+          <div class="conv-title">${escapeHTML(c.title || "未命名对话")}</div>
+          <div class="conv-meta"><span>${relTime(c.updated_at)}</span><span>${c.message_count} 条</span></div>
+        </div>
+        <button class="conv-del" title="删除这段对话">${svgIcon("i-close")}</button>
+      </div>`
       )
       .join("");
     markActiveConv();
@@ -764,7 +767,26 @@ function markActiveConv() {
     el.classList.toggle("active", el.dataset.sid === state.activeConv));
 }
 
-convList.addEventListener("click", (e) => {
+convList.addEventListener("click", async (e) => {
+  const del = e.target.closest(".conv-del");
+  if (del) {
+    const sid = del.closest(".conv-item").dataset.sid;
+    if (!confirm("删除这段对话？删掉就找不回来了")) return;
+    try {
+      const resp = await fetch(`/conversations/${encodeURIComponent(sid)}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (resp.ok) {
+        // 删的是正在看的会话就顺手开新对话
+        if (state.activeConv === sid || state.sessionId === sid) resetBtn.click();
+        loadConversations();
+        setStatus("已删除");
+        setTimeout(() => setStatus(""), 1200);
+      }
+    } catch { setStatus("删除失败，稍后再试"); }
+    return;
+  }
   const item = e.target.closest(".conv-item");
   if (item) loadConversation(item.dataset.sid);
 });

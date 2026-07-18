@@ -2,7 +2,9 @@
 import json
 
 from app.db import (
+    delete_conversation,
     get_conn,
+    get_conversation,
     get_recent_messages,
     get_session_messages,
     get_warn_messages_since_hours,
@@ -70,6 +72,15 @@ def test_refs_column_migration(tmp_db, monkeypatch, tmp_path):
     init_db()
     save_message("m1", "assistant", "带快照", refs="[]")
     assert get_session_messages("m1")[0]["content"] == "带快照"
+
+
+def test_delete_conversation_removes_messages(tmp_db):
+    touch_conversation("gone", user_id=1, title_seed="待删除")
+    save_message("gone", "user", "hi")
+    save_message("gone", "assistant", "你好")
+    delete_conversation("gone")
+    assert get_conversation("gone") is None
+    assert get_session_messages("gone") == []
 
 
 def test_facts_replace_and_list(tmp_db):

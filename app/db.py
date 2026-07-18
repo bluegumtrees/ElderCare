@@ -214,6 +214,13 @@ def get_conversation(session_id: str) -> dict | None:
     return dict(row) if row else None
 
 
+def delete_conversation(session_id: str) -> None:
+    """删除整段会话（消息 + 会话档案）。"""
+    with get_conn() as conn:
+        conn.execute("DELETE FROM messages WHERE session_id = ?", (session_id,))
+        conn.execute("DELETE FROM conversations WHERE session_id = ?", (session_id,))
+
+
 # ============ 每日汇总 ============
 
 def get_warn_messages_since_hours(hours: int = 24) -> list[dict]:
